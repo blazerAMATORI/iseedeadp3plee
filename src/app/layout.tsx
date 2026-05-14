@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Dota 2 Quiz - Онлайн Квиз",
+  title: 'iseedeadp3ple',
   description: "Проверь свои знания Dota 2 в онлайн-квизе с друзьями!",
 };
 
