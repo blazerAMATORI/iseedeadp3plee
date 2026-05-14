@@ -6,8 +6,43 @@ import { useQuizRoom } from "@/hooks/useQuizRoom";
 import { db } from '@/lib/firebase';
 import { ref, update, get } from 'firebase/database';
 import { motion, AnimatePresence } from 'framer-motion';
-// УСТАНОВИ: npm install canvas-confetti && npm i --save-dev @types/canvas-confetti
-import confetti from 'canvas-confetti';
+// Конфетти без внешних пакетов — чистый Canvas API
+function fireConfetti() {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999';
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d')!;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const particles = Array.from({ length: 180 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height - canvas.height,
+    r: Math.random() * 8 + 4,
+    color: ['#f59e0b','#ef4444','#3b82f6','#10b981','#a855f7','#ec4899'][Math.floor(Math.random()*6)],
+    speed: Math.random() * 4 + 2,
+    angle: Math.random() * 2 * Math.PI,
+    spin: (Math.random() - 0.5) * 0.2,
+  }));
+
+  let frame = 0;
+  const animate = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.y += p.speed;
+      p.angle += p.spin;
+      p.x += Math.sin(p.angle) * 2;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    frame++;
+    if (frame < 200) requestAnimationFrame(animate);
+    else canvas.remove();
+  };
+  animate();
+}
 
 const avatarOptions = [
   { id: 1, emoji: '🐱' }, { id: 2, emoji: '🐶' }, { id: 3, emoji: '🦊' }, { id: 4, emoji: '🐸' },
@@ -110,7 +145,7 @@ export default function QuizPage() {
     if (screen !== 'results' || players.length === 0) return;
     const sorted = [...players].sort((a: any, b: any) => b.score - a.score);
     if (sorted[0]?.nickname === nickname) {
-      confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 }, colors: ['#f59e0b', '#ef4444', '#3b82f6', '#10b981'] });
+      fireConfetti();
     }
   }, [screen]);
 
