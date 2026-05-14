@@ -204,7 +204,7 @@ export default function QuizPage() {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-[#0f172a] text-white flex flex-col items-center justify-center p-6">
         <motion.h1 initial={{ y: -20 }} animate={{ y: 0 }} className="text-6xl font-black mb-12 bg-gradient-to-r from-amber-400 to-orange-600 bg-clip-text text-transparent italic">
-          DOTA QUIZ
+          iseedeadp3ple
         </motion.h1>
 
         <div className="bg-slate-800/50 p-8 rounded-[2.5rem] border border-white/10 w-full max-w-md backdrop-blur-xl shadow-2xl">
