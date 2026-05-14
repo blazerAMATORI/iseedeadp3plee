@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Crown, Users, Play, ArrowRight, Trophy, Clock, Zap, Star, Home, Copy, Check, X } from 'lucide-react';
+import { Trophy, Home, Users, Play, Star } from 'lucide-react';
+import { useQuizRoom } from "@/hooks/useQuizRoom";
 
-// Вшитые данные, чтобы не искать папку /data
 const avatarOptions = [
-  { id: 1, emoji: '🐱' }, { id: 2, emoji: '🐶' }, { id: 3, emoji: '🦊' }, { id: 4, emoji: '🐸' },
+  { id: 1, emoji: '🐱' }, { id: 2, emoji: '🐶' }, { id: 3, emoji: ' foxes' }, { id: 4, emoji: '🐸' },
   { id: 5, emoji: '🐵' }, { id: 6, emoji: '🐯' }, { id: 7, emoji: '🐨' }, { id: 8, emoji: '🐙' }
 ];
 
@@ -16,15 +16,19 @@ const dotaQuestions = [
 ];
 
 export default function QuizPage() {
-  const [screen, setScreen] = useState('home');
+  const [screen, setScreen] = useState('home'); // home, lobby, quiz, results
   const [nickname, setNickname] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState(avatarOptions[0]);
+  const [roomId, setRoomId] = useState('dota-lobby'); // Можно сделать ввод ID, но пока фиксированный
+  
   const [currentQ, setCurrentQ] = useState(0);
   const [score, setScore] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState(15);
 
-  // Таймер
+  // ПОДКЛЮЧАЕМ ОНЛАЙН
+  const { roomData, updateScore } = useQuizRoom(roomId, nickname, selectedAvatar.emoji);
+
   useEffect(() => {
     if (screen === 'quiz' && timeLeft > 0 && selectedAnswer === null) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
@@ -36,8 +40,11 @@ export default function QuizPage() {
 
   const handleAnswer = (index: number) => {
     setSelectedAnswer(index);
+    let newScore = score;
     if (index === dotaQuestions[currentQ].correctIndex) {
-      setScore(score + 100 + (timeLeft * 5));
+      newScore = score + 100 + (timeLeft * 5);
+      setScore(newScore);
+      updateScore(newScore); // Отправляем очки в Firebase
     }
     
     setTimeout(() => {
@@ -51,28 +58,65 @@ export default function QuizPage() {
     }, 1500);
   };
 
+  // ЭКРАН ВХОДА
   if (screen === 'home') {
     return (
       <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-5xl font-bold mb-8">Dota 2 Quiz 🎮</h1>
+        <h1 className="text-5xl font-bold mb-8">Dota 2 Online 🎮</h1>
         <div className="bg-white/10 p-8 rounded-3xl border border-white/20 w-full max-w-md">
           <input 
-            className="w-full p-4 rounded-xl bg-white/5 border border-white/20 mb-4 outline-none"
+            className="w-full p-4 rounded-xl bg-white/5 border border-white/20 mb-4 outline-none focus:border-amber-500"
             placeholder="Твой никнейм"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
           />
           <div className="grid grid-cols-4 gap-2 mb-6">
             {avatarOptions.map(a => (
-              <button key={a.id} onClick={() => setSelectedAvatar(a)} className={`text-2xl p-2 rounded-lg ${selectedAvatar.id === a.id ? 'bg-amber-500' : 'bg-white/5'}`}>{a.emoji}</button>
+              <button key={a.id} onClick={() => setSelectedAvatar(a)} className={`text-2xl p-2 rounded-lg transition ${selectedAvatar.id === a.id ? 'bg-amber-500 scale-110' : 'bg-white/5'}`}>{a.emoji}</button>
             ))}
           </div>
-          <button onClick={() => setScreen('quiz')} className="w-full bg-amber-500 p-4 rounded-xl font-bold text-lg hover:bg-amber-400 transition">Начать игру</button>
+          <button 
+            disabled={!nickname}
+            onClick={() => setScreen('lobby')} 
+            className="w-full bg-amber-500 p-4 rounded-xl font-bold text-lg hover:bg-amber-400 disabled:opacity-50 transition"
+          >
+            Войти в лобби
+          </button>
         </div>
       </div>
     );
   }
 
+  // ЛОББИ (ОНЛАЙН ТУТ)
+  if (screen === 'lobby') {
+    const players = roomData?.players ? Object.values(roomData.players) : [];
+    return (
+      <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6">
+        <h2 className="text-3xl font-bold mb-6 flex items-center gap-2"><Users /> Игроки в лобби</h2>
+        <div className="grid grid-cols-1 gap-4 w-full max-w-md mb-8">
+          {players.map((p: any, idx: number) => (
+            <div key={idx} className="bg-white/10 p-4 rounded-2xl flex items-center justify-between border border-white/5">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">{p.avatar}</span>
+                <span className="font-bold">{p.nickname} {p.nickname === nickname && "(Вы)"}</span>
+              </div>
+              <div className="flex items-center gap-2 text-amber-400">
+                <Star size={16} /> {p.score || 0}
+              </div>
+            </div>
+          ))}
+        </div>
+        <button 
+          onClick={() => setScreen('quiz')} 
+          className="bg-emerald-500 p-4 px-12 rounded-xl font-bold text-lg hover:bg-emerald-400 transition flex items-center gap-2"
+        >
+          <Play /> Погнали!
+        </button>
+      </div>
+    );
+  }
+
+  // КВИЗ И РЕЗУЛЬТАТЫ (оставил как было, но с отправкой очков)
   if (screen === 'quiz') {
     const q = dotaQuestions[currentQ];
     return (
@@ -111,8 +155,8 @@ export default function QuizPage() {
         <Trophy className="w-20 h-20 text-amber-400 mb-4" />
         <h2 className="text-4xl font-bold mb-2">Финиш!</h2>
         <p className="text-2xl mb-8">{nickname}, ты набрал <span className="text-amber-400">{score}</span> очков</p>
-        <button onClick={() => window.location.reload()} className="bg-white/10 p-4 px-8 rounded-xl flex items-center gap-2 hover:bg-white/20">
-          <Home /> На главную
+        <button onClick={() => setScreen('lobby')} className="bg-white/10 p-4 px-8 rounded-xl flex items-center gap-2 hover:bg-white/20 transition">
+           Вернуться в лобби
         </button>
       </div>
     );
