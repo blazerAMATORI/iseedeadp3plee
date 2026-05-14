@@ -70,19 +70,83 @@ export default function QuizPage() {
   };
 
   // Экран входа
+  // Экран входа
   if (screen === 'home') {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-[#0f172a] text-white flex flex-col items-center justify-center p-6">
-        <motion.h1 initial={{ y: -20 }} animate={{ y: 0 }} className="text-6xl font-black mb-12 bg-gradient-to-r from-amber-400 to-orange-600 bg-clip-text text-transparent italic">DOTA QUIZ</motion.h1>
-        <div className="bg-slate-800/50 p-8 rounded-[2rem] border border-white/10 w-full max-w-md backdrop-blur-xl shadow-2xl">
-          <input className="w-full p-4 rounded-2xl bg-slate-900/50 border border-white/10 mb-3 outline-none focus:ring-2 ring-amber-500/50 transition-all" placeholder="Твой ник" value={nickname} onChange={(e) => setNickname(e.target.value)} />
-          <input className="w-full p-4 rounded-2xl bg-slate-900/50 border border-white/10 mb-6 outline-none focus:ring-2 ring-amber-500/50 transition-all" placeholder="Код лобби" value={roomId} onChange={(e) => setRoomId(e.target.value)} />
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        className="min-h-screen bg-[#0f172a] text-white flex flex-col items-center justify-center p-6"
+      >
+        <motion.h1 
+          initial={{ y: -20 }} 
+          animate={{ y: 0 }} 
+          className="text-6xl font-black mb-12 bg-gradient-to-r from-amber-400 to-orange-600 bg-clip-text text-transparent italic"
+        >
+          DOTA QUIZ
+        </motion.h1>
+
+        <div className="bg-slate-800/50 p-8 rounded-[2.5rem] border border-white/10 w-full max-w-md backdrop-blur-xl shadow-2xl">
+          <div className="space-y-4 mb-6">
+            <div>
+              <label className="text-xs font-bold text-amber-500 uppercase ml-2 mb-1 block">Никнейм</label>
+              <input 
+                className="w-full p-4 rounded-2xl bg-slate-900/50 border border-white/10 outline-none focus:ring-2 ring-amber-500/50 transition-all" 
+                placeholder="Твой ник" 
+                value={nickname} 
+                onChange={(e) => setNickname(e.target.value)} 
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-amber-500 uppercase ml-2 mb-1 block">Код лобби</label>
+              <input 
+                className="w-full p-4 rounded-2xl bg-slate-900/50 border border-white/10 outline-none focus:ring-2 ring-amber-500/50 transition-all" 
+                placeholder="Например: gaben777" 
+                value={roomId} 
+                onChange={(e) => setRoomId(e.target.value)} 
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-4 gap-3 mb-8">
             {avatarOptions.map(a => (
-              <button key={a.id} onClick={() => setSelectedAvatar(a)} className={`text-3xl p-3 rounded-xl transition-all ${selectedAvatar.id === a.id ? 'bg-amber-500 scale-110 shadow-[0_0_20px_rgba(245,158,11,0.4)]' : 'bg-slate-900/50 hover:bg-slate-700'}`}>{a.emoji}</button>
+              <button 
+                key={a.id} 
+                onClick={() => setSelectedAvatar(a)} 
+                className={`text-3xl p-3 rounded-xl transition-all ${selectedAvatar.id === a.id ? 'bg-amber-500 scale-110 shadow-[0_0_20px_rgba(245,158,11,0.4)]' : 'bg-slate-900/50 hover:bg-slate-700'}`}
+              >
+                {a.emoji}
+              </button>
             ))}
           </div>
-          <button disabled={!nickname || !roomId} onClick={() => setScreen('lobby')} className="w-full bg-gradient-to-r from-amber-500 to-orange-600 p-5 rounded-2xl font-black text-xl hover:brightness-110 disabled:opacity-30 transition-all uppercase tracking-widest">Создать пати</button>
+
+          <div className="flex flex-col gap-3">
+            <button 
+              disabled={!nickname || !roomId} 
+              onClick={() => setScreen('lobby')} 
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-600 p-5 rounded-2xl font-black text-xl hover:brightness-110 disabled:opacity-30 transition-all uppercase tracking-widest shadow-lg shadow-orange-900/20"
+            >
+              Войти в игру
+            </button>
+            
+            <div className="flex items-center gap-4 my-2">
+              <div className="h-[1px] bg-white/10 flex-1"></div>
+              <span className="text-[10px] text-white/20 font-bold uppercase">или</span>
+              <div className="h-[1px] bg-white/10 flex-1"></div>
+            </div>
+
+            <button 
+              disabled={!nickname || !roomId} 
+              onClick={() => {
+                // Если хочешь, чтобы "Создать" генерило случайный ID, можно добавить функцию, 
+                // но пока оставим так для простоты
+                setScreen('lobby');
+              }} 
+              className="w-full bg-slate-700/50 border border-white/10 p-4 rounded-2xl font-bold text-sm hover:bg-slate-700 transition-all uppercase tracking-widest"
+            >
+              Создать новое пати
+            </button>
+          </div>
         </div>
       </motion.div>
     );
