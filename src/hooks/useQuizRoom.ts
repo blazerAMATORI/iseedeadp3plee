@@ -25,37 +25,40 @@ export function useQuizRoom(
     set(playerRef, { nickname, avatar, score: 0 });
     onDisconnect(playerRef).remove();
 
-    // Если комната пустая (нет хоста или нет других игроков) — становимся хостом
+    // Проверяем нужно ли стать хостом
     get(roomRef).then((snapshot) => {
       const data = snapshot.val();
       const players = data?.players ? Object.keys(data.players) : [];
       const hasNoHost = !data?.host;
-      const isAloneInRoom = players.length === 0; // проверяем ДО того как сами зашли
+      const isAloneInRoom = players.length === 0;
 
       if (hasNoHost || isAloneInRoom) {
-        update(roomRef, { host: nickname });
+        // FIX: сбрасываем статус комнаты чтобы не влетать сразу в игру
+        // Вопросы (questions) НЕ трогаем — они остаются с прошлой сессии
+        update(roomRef, {
+          host: nickname,
+          status: 'waiting',
+          currentQuestion: 0,
+          answers: null,
+        });
       }
     });
 
     return () => {
       unsubscribe();
-      // При уходе: удаляем себя и если мы были хостом — передаём хостинг
       remove(playerRef).then(() => {
         get(roomRef).then((snapshot) => {
           const data = snapshot.val();
           if (!data) return;
 
-          // Если мы были хостом — передаём роль следующему игроку
           if (data.host === nickname) {
             const remaining = data.players
               ? Object.values(data.players).filter((p: any) => p.nickname && p.nickname !== nickname)
               : [];
 
             if (remaining.length > 0) {
-              // Передаём хостинг первому оставшемуся
               update(roomRef, { host: (remaining[0] as any).nickname });
             } else {
-              // Все ушли — очищаем хоста
               update(roomRef, { host: null });
             }
           }
