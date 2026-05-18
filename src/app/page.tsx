@@ -198,7 +198,23 @@ export default function QuizPage() {
   }, [screen]);
 
   // ── ДЕЙСТВИЯ ─────────────────────────────────────────────────────────────
-  const handleJoin = () => { setJoined(true); setScreen('lobby'); };
+  const handleJoin = async () => {
+    const snapshot = await get(ref(db, `rooms/${roomId}`));
+    const data = snapshot.val();
+    const existingPlayers = data?.players ? Object.values(data.players) : [];
+
+    // Сбрасываем статус ДО joined=true — иначе onValue поймает старый status:'playing'
+    if (existingPlayers.length === 0 || data?.status === 'finished') {
+      await update(ref(db, `rooms/${roomId}`), {
+        status: 'waiting',
+        currentQuestion: 0,
+        answers: null,
+      });
+    }
+
+    setJoined(true);
+    setScreen('lobby');
+  };
 
   const handleCreate = async () => {
     const snapshot = await get(ref(db, `rooms/${roomId}`));
