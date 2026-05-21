@@ -302,7 +302,7 @@ export default function QuizPage() {
       <ThemeToggle />
 
       <motion.h1 initial={{ y: -20 }} animate={{ y: 0 }} className="text-6xl font-black mb-12 bg-gradient-to-r from-amber-400 to-orange-600 bg-clip-text text-transparent italic">
-        iseedeadp3ple
+        web quiz
       </motion.h1>
 
       <div className={`${th.card} border p-8 rounded-[2.5rem] w-full max-w-md backdrop-blur-xl shadow-2xl`}>
